@@ -19,6 +19,7 @@
 import https from "https";
 import fs from "fs";
 import path from "path";
+import os from "os";
 import {Plugin} from "@fonoster/common";
 import {
   TTSPlugin,
@@ -37,7 +38,7 @@ import logger from "@fonoster/logger";
  *
  * const MaryTTS = require("@fonoster/marytts");
  *
- * new MaryTTS().synthetize("Hello world")
+ * new MaryTTS().synthesize("Hello world")
  *  .then((result) => console.log("path: " + result.pathToFile))
  *  .catch(console.err);
  */
@@ -53,7 +54,7 @@ export default class MaryTTS extends Plugin implements TTSPlugin {
   constructor(config: MaryTTSConfig) {
     super("tts", "marytts");
     this.config = config;
-    this.config.path = this.config.path ? this.config.path : "/tmp";
+    this.config.path = this.config.path ? this.config.path : os.tmpdir();
     this.init(this.config);
   }
 
@@ -82,7 +83,7 @@ export default class MaryTTS extends Plugin implements TTSPlugin {
    * For more information check the following link: http://marytts.phonetik.uni-muenchen.de:59125/documentation.html
    * WARNING: On windows the command "which" that sox library uses is not the same. In windows is "where" instead
    */
-  async synthetize(
+  async synthesize(
     text: string,
     options: MarySynthOptions = {locale: "EN_US"}
   ): Promise<SynthResult> {

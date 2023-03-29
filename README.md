@@ -2,11 +2,11 @@
 
 ![Flow](https://raw.githubusercontent.com/fonoster/fonoster/main/flow.png)
 
+<!-- https://user-images.githubusercontent.com/40646537/148554756-0258e06b-d850-46fb-8206-daf9c601b9bf.mov -->
+
 ## 💬 [Join the conversation](https://github.com/fonoster/fonoster/discussions) 👈
 
 [Fonoster Inc](https://fonoster.com) researches an innovative Programmable Telecommunications Stack that will allow for an entirely cloud-based utility for businesses to connect telephony services with the Internet.
-
-<a href="https://www.producthunt.com/posts/fonoster?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-fonoster" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=319527&theme=light" alt="Fonoster - Engage with your customers with VoIP or SMS | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 
 ## Features
 
@@ -54,7 +54,7 @@ voiceServer.listen((req, res) => {
   res.play("sound:hello-world");
 });
 
-// your app will leave at http://127.0.0.1/voiceapp 
+// your app will be at http://127.0.0.1/voiceapp 
 // and you can easily publish it to the Internet with:
 // ngrok http 3000
 ```
@@ -72,8 +72,8 @@ callManager.call({
  to: "17853178070",
  webhook: "https://5a2d2ea5d84d.ngrok.io/voiceapp"
 })
-.then(console.log)
-.catch(console.error);
+ .then(console.log)
+ .catch(console.error);
 ```
 
 ## Getting Started
@@ -85,6 +85,8 @@ To get started with FN use the following resources:
 - [Connecting Fonoster with Dialogflow](https://learn.fonoster.com/docs/tutorials/connecting_with_dialogflow)
 - [Using Google Speech APIs](https://learn.fonoster.com/docs/tutorials/using_google_speech)
 - [How we created an open-source alternative to Twilio and why it matters](https://github.com/fonoster/blog/blob/main/2021/001/post.md)
+
+<a href="https://www.producthunt.com/posts/fonoster?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-fonoster" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=319527&theme=light" alt="Fonoster - Engage with your customers with VoIP or SMS | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
 
 ## Bugs and Feedback
 
@@ -105,7 +107,7 @@ We're glad to be supported by respected companies and individuals from several i
 
 Find all supporters in our [`BACKERS.md`](./BACKERS.md) file.
 
-> [Support Fono's developers on Gh Sponsors](https://github.com/sponsors/psanders)
+> [Become a Github Sponsor](https://github.com/sponsors/fonoster)
 
 ---
 

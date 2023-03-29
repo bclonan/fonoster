@@ -19,6 +19,7 @@
 import Auth from "@fonoster/auth";
 import Numbers from "@fonoster/numbers";
 import logger from "@fonoster/logger";
+import WebSocket from "ws";
 import {CallRequest} from "./types";
 import {sendCallRequest} from "./utils/send_call_request";
 import {getChannelVar, getChannelVarAsJson} from "./utils/channel_variable";
@@ -28,12 +29,13 @@ import {playbackFinishedHandler} from "./handlers/playback_finished";
 import {recordFinishHandler} from "./handlers/record_finished";
 import {uploadRecording} from "./utils/upload_recording";
 import {recordFailedHandler} from "./handlers/record_failed";
-import {destroyBridge, hangup} from "./utils/destroy_channel";
+import {hangup, hangupExternalChannel} from "./utils/destroy_channel";
 import {channelTalkingHandler} from "./handlers/channel_talking";
-import WebSocket from "ws";
 import {sendDtmf} from "./handlers/send_dtmf";
 import {answer} from "./utils/answer_channel";
 import {dial} from "./handlers/dial";
+import { ulogger, ULogType } from "@fonoster/logger/src/logger";
+
 const wsConnections = new Map();
 
 // First try the short env but fallback to the cannonical version
@@ -112,10 +114,16 @@ export default function (err: any, ari: any) {
     });
 
     ws.on("error", async (e: Error) => {
+      const error = `Error communicating with your Webhook: Unable to connect with Webhook ${webhook}` 
       logger.error(
         `@fonoster/dispatcher cannot connect with voiceapp [webhook = ${webhook}]`
       );
-      logger.silly(e);
+      ulogger({
+        accessKeyId: request.accessKeyId,
+        eventType: ULogType.APP,
+        level: "error",
+        message: error
+      })
       channel.hangup();
     });
 
@@ -125,6 +133,22 @@ export default function (err: any, ari: any) {
 
     channel.on("ChannelTalkingFinished", async (event: any, channel: any) => {
       channelTalkingHandler(wsConnections.get(channel.id), channel.id, false);
+    });
+
+    channel.on("ChannelLeftBridge", async (event: any, resources: any) => {
+      logger.verbose(
+        `@fonoster/dispatcher channel left bridge [bridgeId = ${resources.bridge.id}, channelId = ${resources.channel.id}]`
+      );
+      try {
+        await channel.hangup();
+      } catch (e) {
+        /* Ignore because because channel might not exist anymore */
+      }
+      try {
+        await resources.bridge.destroy();
+      } catch (e) {
+        /* Ignore because the bridge might not exist anymore */
+      }
     });
   });
 
@@ -143,7 +167,7 @@ export default function (err: any, ari: any) {
         await externalMediaHandler(wsClient, ari, event);
         break;
       case "StopExternalMedia":
-        await destroyBridge(ari, event.userevent.sessionId);
+        await hangupExternalChannel(ari, event.userevent.sessionId);
         break;
       case "UploadRecording":
         await uploadRecording(
@@ -155,7 +179,7 @@ export default function (err: any, ari: any) {
         await sendDtmf(wsClient, ari, event);
         break;
       case "Hangup":
-        await hangup(wsClient, ari, event.userevent.sessionId, true);
+        await hangup(ari, event.userevent.sessionId);
         break;
       case "Answer":
         await answer(wsClient, ari, event.userevent.sessionId);
@@ -194,11 +218,21 @@ export default function (err: any, ari: any) {
     );
   });
 
-  ari.on("StasisEnd", (event: any, channel: any) => {
+  ari.on("StasisEnd", async (event: any, channel: any) => {
     logger.verbose(
       `@fonoster/dispatcher stasis end [sessionId = ${channel.id}]`
     );
-    wsConnections.delete(channel.id);
+    const ws = wsConnections.get(channel.id);
+    // The external channels don't have ws connections
+    if (ws) {
+      ws.send(
+        JSON.stringify({
+          type: "SessionClosed",
+          sessionId: channel.id
+        })
+      );
+      wsConnections.delete(channel.id);
+    }
   });
 
   ari.start("mediacontroller");
